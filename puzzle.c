@@ -59,6 +59,15 @@ int minMaxEdge(struct Edge* edge, int num_vertices, int u, int v) {
 
 }
 
+int cmpfunc (const void * a, const void * b) {
+    
+    struct Edge *edgeA = (struct Edge *)a;
+    struct Edge *edgeB = (struct Edge *)b;
+ 
+    return (edgeA->weight - edgeB->weight);
+
+}
+
 int main(int argc, char const *argv[]) {
     /*variables declaration*/
     int num_vertices;
@@ -84,5 +93,11 @@ int main(int argc, char const *argv[]) {
         printf("%d %d %d \n", edges[i].src, edges[i].dest, edges[i].weight);
     }
 
+    qsort(edges, num_vertices, sizeof(struct Edge), cmpfunc);
+    printf("*****************************************************\n");
+    
+    for (i = 0; i < num_arestas; i++) {
+        printf("%d %d %d \n", edges[i].src, edges[i].dest, edges[i].weight);
+    }
 
 }
