@@ -20,80 +20,88 @@
 #include <stdlib.h>
 #include <string.h> 
 
-/* define the linked list struct that will be used to store the adj vertex */
-typedef struct linked_list {
-    struct node * no;
-    struct linked_list *next;
-    int weight;
-}linked_list;
-
-/* define the node struct that will represent the graph */
-typedef struct node {
-    int vert;
-    linked_list *list;
-}node;
-
 /**
- * insert the node into the Adjacency List
+ * @brief edge structure
  *
- * @param node *graph
- * @param int i
- * @param int j
- *
- * @return the function a pointer to the begining of the list
+ * Struct that aims to store usefull information about the graph edges,
+ * like, where the edge start, where it ends and how much it weight.
  */
-void insertList(node *graph, int i, int j, int weight);
+struct Edge  { 
+    /* start vertex */
+    int u;
+    /* end vertex */      
+    int v;
+    /* vertex weight */
+    int weight; 
+};
 
-/* main code that read the entries and coord function calls*/
 int main(int argc, char const *argv[]) {
     /*variables declaration*/
-    int numb_elem;
+    int num_vertices;
     int num_arestas;
-    int u,v,w;
-    int i;
-   	 
+    int u, v, i, weight, j;
+    struct Edge* edges;
     int *dst;
-    node *graph;
+    int neg_edge = 0;
 
     /* here we gonna read the number of elements and create the pointers vector */
-    scanf("%d %d",&numb_elem, &num_arestas);
-    graph = malloc((numb_elem) * sizeof(node));
-    dst = malloc((numb_elem) * sizeof(int));
-    if((!graph) || (!dst))
-        printf("Error in the graph allocation\n");
+    scanf("%d %d",&num_vertices, &num_arestas);
 
-    /* here we initialize the graph vector with NULL */
-    for(i = 0; i < numb_elem; i++){
-        graph[i].vert = i;
-    }
+    edges = (struct Edge*) malloc(num_arestas * sizeof(struct Edge));
+    dst = malloc((num_vertices) * sizeof(int));
 
-    /* Initialize the distance vector */
-	for(i = 0; i < numb_elem; i++){
-        dst[i] = 100000;
-    }
+    for (i = 0; i < num_vertices; ++i)
+    	dst[i] = 999999999;
     dst[0] = 0;
 
     /* here we read the graph edges and create them on the linked list (we are consideing
        an unoriented graph */
     for (i = 0; i < num_arestas; i++) {
-        scanf("%d %d %d",&u,&v,&w);
-        insertList(graph,u,v,w);
+        // printf("%d\n", i);
+        scanf("%d %d %d",&u,&v,&weight);
+        edges[i].u = u;
+        edges[i].v = v;
+        edges[i].weight = weight;
+
+        if (weight < 0)
+        	neg_edge = 1;
+    }
+    
+    if (!neg_edge) {
+    	printf("Impossivel\n");
+    	return 0;
     }
 
- 
+    /* Exec Bellman-Ford */
+    
+    /* First we relax the vertex */
+    for (i = 0; i < num_vertices; i++) {
+    	for (j = 0; j < num_arestas; j++) {
+    		u = edges[j].u;
+    		v = edges[j].v;
+    		weight = edges[j].weight;
+
+    		if (dst[u] != 999999999 && dst[u] + weight < dst[v]) {
+    			dst[v] = dst[u] + weight; 
+    		}
+    	}
+    }
+
+    /* now we check for neg cycles */
+    for (j = 0; j < num_arestas; j++) {
+		u = edges[j].u;
+		v = edges[j].v;
+		weight = edges[j].weight;
+
+		if (dst[u] != 999999999 && dst[u] + weight < dst[v]) {
+			printf("Possivel\n");
+    		return 0;
+		}
+    }
+
+    free(edges);
+    free(dst);
+
+    printf("Impossivel\n");
     return 0;
-}
-
-void insertList(node *graph, int i, int j, int w){
-    /* create an aux pointer that will represent the new node */
-    linked_list *aux;
-    aux = malloc(sizeof(linked_list));
-
-    /* link two nodes */
-    aux->no = &graph[j];
-    aux->next = graph[i].list;
-    aux->weight = w;
-    graph[i].list = aux;
-
-    return;
 }
